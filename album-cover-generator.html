@@ -14,6 +14,7 @@
     body { background-color: #222; color: white; }
     .container { max-width: 800px; margin: auto; padding: 20px; }
     canvas { width: 100%; border: 2px solid white; margin-bottom: 15px; background-color: black; }
+    .font-section { display: none; }
   </style>
 </head>
 <body>
@@ -64,7 +65,47 @@
             <option value="magenta">Magenta</option>
           </select>
 
-          <label>Output Size (Width x Height):</label>
+          <div class="form-check mt-3">
+            <input class="form-check-input" type="checkbox" id="useGoogleFonts" />
+            <label class="form-check-label" for="useGoogleFonts">Use Google Fonts</label>
+          </div>
+
+          <div id="fontSection" class="font-section mt-3">
+            <label>Select Font:</label>
+            <select id="googleFont" class="form-control">
+              <option value="Roboto">Roboto</option>
+              <option value="Open Sans">Open Sans</option>
+              <option value="Lato">Lato</option>
+              <option value="Montserrat">Montserrat</option>
+              <option value="Oswald">Oswald</option>
+              <option value="Raleway">Raleway</option>
+              <option value="Merriweather">Merriweather</option>
+              <option value="Ubuntu">Ubuntu</option>
+              <option value="Playfair Display">Playfair Display</option>
+              <option value="Roboto Condensed">Roboto Condensed</option>
+              <option value="Source Sans Pro">Source Sans Pro</option>
+              <option value="Poppins">Poppins</option>
+              <option value="Dancing Script">Dancing Script</option>
+              <option value="Shadows Into Light">Shadows Into Light</option>
+              <option value="Pacifico">Pacifico</option>
+              <option value="Permanent Marker">Permanent Marker</option>
+              <option value="Rock Salt">Rock Salt</option>
+              <option value="Special Elite">Special Elite</option>
+              <option value="Audiowide">Audiowide</option>
+              <option value="Creepster">Creepster</option>
+            </select>
+            <div class="form-check mt-2">
+              <input class="form-check-input" type="checkbox" id="useArtistFont" checked />
+              <label class="form-check-label" for="useArtistFont">Apply to Artist</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="useTitleFont" checked />
+              <label class="form-check-label" for="useTitleFont">Apply to Title</label>
+            </div>
+            <button type="button" id="loadFontButton" class="btn btn-primary mt-2">Load Font</button>
+          </div>
+
+          <label class="mt-3">Output Size (Width x Height):</label>
           <div class="d-flex">
             <input type="number" id="width" class="form-control me-2" value="1400" required />
             <input type="number" id="height" class="form-control" value="1400" required />
@@ -84,6 +125,47 @@
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
     let loadedImage = null;
+    let fontLoaded = false;
+    let customFont = null;
+
+    // Font control elements
+    const useGoogleFonts = document.getElementById("useGoogleFonts");
+    const fontSection = document.getElementById("fontSection");
+    const googleFontSelect = document.getElementById("googleFont");
+    const loadFontButton = document.getElementById("loadFontButton");
+    const useArtistFont = document.getElementById("useArtistFont");
+    const useTitleFont = document.getElementById("useTitleFont");
+
+    // Show/hide Google Font options
+    useGoogleFonts.addEventListener("change", function() {
+      fontSection.style.display = this.checked ? "block" : "none";
+      if (!this.checked) {
+        fontLoaded = false;
+        customFont = null;
+        drawCanvas();
+      }
+    });
+
+    // Load selected Google Font
+    loadFontButton.addEventListener("click", function() {
+      const selectedFont = googleFontSelect.value;
+      loadGoogleFont(selectedFont);
+    });
+
+    function loadGoogleFont(fontName) {
+      // Create link element for Google Font
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = `https://fonts.googleapis.com/css2?family=${fontName.replace(/\s+/g, '+')}:wght@400;700&display=swap`;
+      document.head.appendChild(link);
+
+      // Set the custom font and redraw canvas
+      link.onload = function() {
+        customFont = fontName;
+        fontLoaded = true;
+        drawCanvas();
+      };
+    }
 
     function drawCanvas() {
       if (!loadedImage) return;
@@ -115,12 +197,28 @@
       ctx.clearRect(0, 0, width, height);
       ctx.drawImage(loadedImage, sx, sy, sw, sh, 0, 0, width, height);
 
+      // Default to Aldrich font
+      let artistFontFamily = "Aldrich, sans-serif";
+      let titleFontFamily = "Aldrich, sans-serif";
+
+      // Use Google Font if enabled and loaded
+      if (useGoogleFonts.checked && fontLoaded) {
+        if (useArtistFont.checked) {
+          artistFontFamily = `'${customFont}', sans-serif`;
+        }
+        if (useTitleFont.checked) {
+          titleFontFamily = `'${customFont}', sans-serif`;
+        }
+      }
+
+      // Draw artist name
       ctx.fillStyle = artistColor;
-      ctx.font = `${artistFontSize}px Aldrich, sans-serif`;
+      ctx.font = `${artistFontSize}px ${artistFontFamily}`;
       ctx.fillText(artist, 60, artistFontSize + 30);
 
+      // Draw song title
       ctx.fillStyle = titleColor;
-      ctx.font = `${titleFontSize}px Aldrich, sans-serif`;
+      ctx.font = `${titleFontSize}px ${titleFontFamily}`;
       ctx.fillText(title, 60, height - 60);
     }
 
@@ -143,6 +241,15 @@
       link.href = canvas.toDataURL();
       link.click();
     });
+
+    // Initial setup
+    canvas.width = 1400;
+    canvas.height = 1400;
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "white";
+    ctx.font = "30px Aldrich, sans-serif";
+    ctx.fillText("Upload an image to start", 60, 60);
   </script>
 </body>
 </html>
