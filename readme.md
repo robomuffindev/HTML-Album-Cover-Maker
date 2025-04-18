@@ -2,7 +2,7 @@
 
 A client-side JavaScript application that lets users create custom album covers using their own images. The generator allows customization of text, fonts, colors and image cropping with zero server dependencies.
 
-![Album Cover Generator Preview](preview.png)
+![AlbumCoverGenerator_Screen_v2](https://github.com/user-attachments/assets/2fc489b6-1733-4ccb-aaea-a52af9037a7b)
 
 ## Features
 
